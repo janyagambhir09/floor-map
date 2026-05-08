@@ -111,8 +111,12 @@ body {
 }
 .m-pin-wrap:hover .m-pin { transform: scale(1.15) translateY(-2px); }
 
-.m-marker.host .m-pin { width: 34px; height: 44px; }
+.m-marker.host .m-pin { width: 28px; height: 36px; }
 .m-marker.live .m-pin path { fill: var(--success); }
+
+/* Active pin fill on click */
+.m-pin-wrap.active .m-pin path:first-child { fill: inherit; }
+.m-pin-wrap.active .m-pin { --pin-active: 1; }
 
 .m-marker .m-line {
   width: 1px; height: 8px; background: var(--border-hover); margin-top: 0;

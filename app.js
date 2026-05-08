@@ -306,12 +306,26 @@ function renderMarkers() {
     marker.on("click", (e) => {
       L.DomEvent.stopPropagation(e);
       tip.classList.remove("visible");
-      // Fill the clicked pin
-      document.querySelectorAll(".m-pin-wrap.active").forEach(el => el.classList.remove("active"));
+      // Reset previous active pins
+      document.querySelectorAll(".m-pin.pin-active").forEach(svg => {
+        const path = svg.querySelector("path");
+        if (path) { path.setAttribute("fill", "white"); }
+        const circ = svg.querySelector("circle");
+        if (circ) { circ.setAttribute("fill", circ.dataset.col); }
+        svg.classList.remove("pin-active");
+      });
+      // Fill clicked pin
       const el = e.target.getElement ? e.target.getElement() : e.target._icon;
       if (el) {
-        const wrap = el.querySelector(".m-pin-wrap");
-        if (wrap) wrap.classList.add("active");
+        const svg = el.querySelector(".m-pin");
+        if (svg) {
+          const col = CAT_COLORS[p.category] || "#1a1a2e";
+          const path = svg.querySelector("path");
+          if (path) path.setAttribute("fill", col);
+          const circ = svg.querySelector("circle");
+          if (circ) { circ.dataset.col = col; circ.setAttribute("fill", "white"); }
+          svg.classList.add("pin-active");
+        }
       }
       showProjectDetail(p);
     });
