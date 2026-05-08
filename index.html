@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>The Floor — London Tech Ecosystem</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader">
+    <div class="loader-inner">
+      <div class="loader-bar"></div>
+      <div class="loader-text">LOADING BOROUGHS · LONDON · 33 / 33</div>
+    </div>
+  </div>
+
+  <!-- Crop marks -->
+  <div class="corner-mark tl"></div>
+  <div class="corner-mark tr"></div>
+  <div class="corner-mark bl"></div>
+  <div class="corner-mark br"></div>
+
+  <!-- Brand -->
+  <div class="brand">
+    <div class="title">THE<br>FLOOR</div>
+    <div class="meta"><span>PHOENIX COURT</span><span>08 MAY 2026</span></div>
+    <div class="sub">London tech ecosystem<br>a working map · v0.5</div>
+  </div>
+
+  <!-- QR -->
+  <div class="qr-sub">
+    <div class="h">Add Yourself &#x2197;</div>
+    <div class="l">Scan to join and add your project, lab, fund, or studio.</div>
+    <div class="qr-invite">FLOOR-08MAY-VIP</div>
+  </div>
+  <div class="qr-card">
+    <svg id="qr-svg" class="qr-svg" viewBox="0 0 25 25" shape-rendering="crispEdges"></svg>
+    <div class="qr-cap"><b>SCAN</b><span class="arrow">/floor/add</span></div>
+  </div>
+
+  <!-- Search -->
+  <div id="search-bar" class="search-bar">
+    <svg class="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <input type="text" id="search-input" placeholder="Search projects, people, events…" autocomplete="off"/>
+  </div>
+  <div id="search-results" class="search-results"></div>
+
+  <!-- Compass -->
+  <div class="compass">
+    <svg viewBox="-50 -50 100 100">
+      <circle r="44" fill="none" stroke="#0a0a0a" stroke-width="1"/>
+      <circle r="2" fill="#0a0a0a"/>
+      <polygon points="0,-40 -7,8 0,3 7,8" fill="#0a0a0a"/>
+      <polygon points="0,40 -6,-6 0,-2 6,-6" fill="none" stroke="#0a0a0a" stroke-width="1"/>
+      <line x1="0" y1="-44" x2="0" y2="-38" stroke="#0a0a0a" stroke-width="1.4"/>
+      <line x1="0" y1="-44" x2="0" y2="-41" stroke="#0a0a0a" stroke-width="0.8" transform="rotate(45)"/>
+      <line x1="0" y1="-44" x2="0" y2="-38" stroke="#0a0a0a" stroke-width="1.4" transform="rotate(90)"/>
+      <line x1="0" y1="-44" x2="0" y2="-41" stroke="#0a0a0a" stroke-width="0.8" transform="rotate(135)"/>
+      <line x1="0" y1="-44" x2="0" y2="-38" stroke="#0a0a0a" stroke-width="1.4" transform="rotate(180)"/>
+      <line x1="0" y1="-44" x2="0" y2="-41" stroke="#0a0a0a" stroke-width="0.8" transform="rotate(225)"/>
+      <line x1="0" y1="-44" x2="0" y2="-38" stroke="#0a0a0a" stroke-width="1.4" transform="rotate(270)"/>
+      <line x1="0" y1="-44" x2="0" y2="-41" stroke="#0a0a0a" stroke-width="0.8" transform="rotate(315)"/>
+      <text x="0" y="-46" style="font:700 10px Helvetica,Arial,sans-serif" text-anchor="middle" fill="#0a0a0a">N</text>
+      <text x="46" y="3" style="font:500 8px Helvetica,Arial,sans-serif" text-anchor="middle" fill="#8a8a86">E</text>
+      <text x="-46" y="3" style="font:500 8px Helvetica,Arial,sans-serif" text-anchor="middle" fill="#8a8a86">W</text>
+      <text x="0" y="52" style="font:500 8px Helvetica,Arial,sans-serif" text-anchor="middle" fill="#8a8a86">S</text>
+    </svg>
+  </div>
+
+  <!-- Scale bar -->
+  <div class="scale">
+    <div class="bar"><span class="line"></span><span>2 km</span></div>
+    <div class="meta">The Floor — London Tech<br>33 boroughs · 28 entries<br>updated 08·05·26 / 09:14</div>
+  </div>
+
+  <!-- Legend -->
+  <div id="legend" class="legend"></div>
+
+  <!-- Zoom controls -->
+  <div class="zoom">
+    <button id="zoom-in">+</button>
+    <button id="zoom-out">&minus;</button>
+    <button id="zoom-reset" style="font-size:11px">&#x293E;</button>
+    <div class="zlevel" id="zlevel">Z 12</div>
+  </div>
+
+  <!-- Selected-borough pill -->
+  <div id="selected-pill" class="selected-pill">
+    <span class="sp-kind">Selected</span>
+    <span class="sp-name" id="sp-name"></span>
+    <span class="sp-x">CLEAR &#x2715;</span>
+  </div>
+
+  <!-- Cursor tooltip -->
+  <div id="tooltip" class="tip">
+    <div class="tip-kind" id="tip-kind"></div>
+    <div class="tip-title" id="tip-title"></div>
+    <div class="tip-body" id="tip-body"></div>
+    <div class="tip-meta">
+      <span id="tip-meta-l"></span>
+      <span id="tip-meta-r"></span>
+    </div>
+  </div>
+
+  <!-- Detail Panel (desktop) -->
+  <aside id="detail-panel" class="detail-panel">
+    <button class="panel-close" id="panel-close">&times;</button>
+    <div id="panel-content"></div>
+  </aside>
+
+  <!-- Bottom Sheet (mobile) -->
+  <div id="bottom-sheet" class="bottom-sheet">
+    <div class="sheet-handle" id="sheet-handle"><div class="sheet-bar"></div></div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+
+  <!-- Events sidebar toggle -->
+  <button id="events-btn" class="events-btn">
+    <span class="events-dot"></span>
+    Events
+  </button>
+
+  <!-- Join / Apply button -->
+  <button id="join-btn" class="join-btn">Join The Floor</button>
+
+  <!-- Application Modal -->
+  <div id="apply-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <button class="modal-close" id="apply-close">&times;</button>
+      <div class="modal-header">
+        <div class="modal-emblem">F</div>
+        <h2>Join The Floor</h2>
+        <p>Apply for membership. Floor members get live map access, event RSVPs, private networking rooms, and community visibility.</p>
+      </div>
+      <form id="apply-form">
+        <div class="form-row">
+          <label>Full Name<input type="text" name="name" required placeholder="Ava Chen"/></label>
+          <label>Email<input type="email" name="email" required placeholder="ava@canopy.ai"/></label>
+        </div>
+        <div class="form-row">
+          <label>Organisation<input type="text" name="org" required placeholder="Canopy Studios"/></label>
+          <label>Role
+            <select name="role" required>
+              <option value="" disabled selected>Select…</option>
+              <option>Founder</option><option>Investor</option><option>Operator</option>
+              <option>Researcher</option><option>Engineer</option><option>Designer</option>
+              <option>Student</option><option>Other</option>
+            </select>
+          </label>
+        </div>
+        <label>Why do you want to join?<textarea name="reason" rows="3" placeholder="What are you working on and what do you hope to find?"></textarea></label>
+        <div class="form-row">
+          <label>LinkedIn / Website<input type="url" name="linkedin" placeholder="https://"/></label>
+          <label>Invite Code <span class="opt">(optional)</span><input type="text" name="invite" placeholder="FLOOR-XXXX"/></label>
+        </div>
+        <button type="submit" class="btn-primary">Submit Application</button>
+        <p class="form-note">Applications are reviewed within 48 hours. Referrals and invite codes are fast-tracked.</p>
+      </form>
+      <div id="apply-success" class="apply-success hidden">
+        <div class="success-check">&#x2713;</div>
+        <h3>Application received.</h3>
+        <p>We'll review your profile and get back within 48 hours. In the meantime, explore the map.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Room Pass Modal -->
+  <div id="room-overlay" class="modal-overlay hidden">
+    <div class="modal room-modal">
+      <button class="modal-close" id="room-close">&times;</button>
+      <div id="room-content"></div>
+    </div>
+  </div>
+
+  <!-- Mobile tab bar -->
+  <nav id="mobile-tabs" class="mobile-tabs">
+    <button class="mtab active" data-view="map">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 7l7-5 7 5v9a1 1 0 01-1 1H4a1 1 0 01-1-1V7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      Map
+    </button>
+    <button class="mtab" data-view="events">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="14" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M7 2v4M13 2v4M3 9h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Events
+    </button>
+    <button class="mtab" data-view="search">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Search
+    </button>
+    <button class="mtab" id="mtab-join" data-view="join">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 17.5c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Join
+    </button>
+  </nav>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
